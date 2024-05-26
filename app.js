@@ -1,9 +1,9 @@
 import express from "express";
 const app = express();
 import dotenv from "dotenv";
-import connection from "./models/connection.js";
 import loggingMiddleware from "./middlewares/loggingMiddleware.js";
 import sequelize from "./models/connection.js";
+import profileRoute from "./routes/profile-route.js";
 
 dotenv.config();
 
@@ -14,19 +14,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(loggingMiddleware);
 app.get("/", (req, res) => res.json({ msg: "Hello World" }));
+app.use("/profile", profileRoute);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
-// connection.getConnection((err) => {
-//   if (err) {
-//     console.log("Error connecting to mysql :", err);
-//     server.close();
-//   } else {
-//     console.log("Connect to mysql successfully");
-//   }
-// });
 
 try {
   await sequelize.authenticate();
