@@ -19,6 +19,10 @@ const errorHandler = (err, req, res) => {
       statusCode = 403;
       message = "Invalid Token";
       break;
+    case "Invalid_Email":
+      statusCode = 403;
+      message = "Invalid Email Format";
+      break;
     case "Not_Req_Permission":
       statusCode = 403;
       message = "This quiz does not require permission";
@@ -31,13 +35,17 @@ const errorHandler = (err, req, res) => {
       statusCode = 404;
       message = "User Not Registered";
       break;
-    case "Already_Exist":
+    case "Username_Exist":
       statusCode = 409;
       message = "Username Already Exist";
       break;
     case "Name_Exist":
       statusCode = 409;
       message = "Room Name Already Exist";
+      break;
+    case "Email_Exist":
+      statusCode = 409;
+      message = "Email Already Exist";
       break;
     case "Data_Exist":
       statusCode = 409;
