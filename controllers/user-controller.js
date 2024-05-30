@@ -1,8 +1,11 @@
 import User from "../models/User.js";
 
+// const bcrypt = require("bcrypt"),
+//   jwt = require("jsonwebtoken");
+
 export const register = async (req, res) => {
     const { name, email, password, role } = req.body
-    if (password.length < 8) {
+    if (password.length <= 8) {
         return res.status(400).json({
             message: "Password harus lebih dari 8 karakter",
         })};
@@ -11,6 +14,12 @@ export const register = async (req, res) => {
     if (!emailRegex.test(email)) {
         return res.status(400).json({
             message: "Email tidak valid",
+        })};
+      
+    const allowedRoles = ["penyewa", "pemilik", "admin"];
+    if (!allowedRoles.includes(role)) {
+        return res.status(400).json({
+            message: "Role tidak valid",
         })};
     
     try {
@@ -27,6 +36,10 @@ export const register = async (req, res) => {
         email: email,
         password: password,
         role: role,
+      });
+      res.status(201).json({
+        status: "Success",
+        data: newUser,
       });
     }
     catch (error) {
@@ -60,6 +73,31 @@ export const login = async (req, res) => {
           message: "Server Error",
         });
       }
+}
+
+export const deleteUser = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await User.destroy({
+      where: {
+        id: id,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({
+        message: "User tidak ditemukan",
+      });
+    }
+    res.status(200).json({
+      status: "Success",
+      message: "Berhasil menghapus data",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Server Error",
+    });
+  }
 }
       
 export const updateUser = async (req, res) => {
