@@ -4,7 +4,7 @@ import mysql2 from "mysql2";
 
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     host: dbConfig.HOST,
-    dialect: dbConfig.dialect,
+    dialect: dbConfig.DIALECT,
     dialectModule: mysql2,
 });    
 
