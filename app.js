@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import loggingMiddleware from "./middlewares/loggingMiddleware.js";
 import sequelize from "./models/connection.js";
 import profileRoute from "./routes/profile-route.js";
+import userRoute from "./routes/user-route.js"
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(loggingMiddleware);
 app.get("/", (req, res) => res.json({ msg: "Hello World" }));
 app.use("/profile", profileRoute);
+app.use('/user', userRoute)
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
