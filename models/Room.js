@@ -32,3 +32,5 @@ const Room = sequelize.define("rooms", {
     tableName: "rooms",
     timestamps: false
 })
+
+export default Room;

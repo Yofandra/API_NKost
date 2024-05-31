@@ -27,3 +27,5 @@ const Rating = sequelize.define("ratings", {
     tableName: "ratings",
     timestamps: false
 })
+
+export default Rating;

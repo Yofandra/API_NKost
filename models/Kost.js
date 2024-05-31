@@ -35,3 +35,5 @@ const Kost = sequelize.define("kosts", {
     tableName: "kost",
     timestamps: false  
 });
+
+export default Kost;

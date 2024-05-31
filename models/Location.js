@@ -35,3 +35,5 @@ const Location = sequelize.define("locations", {
     tableName: "location",
     timestamps: false  
 })
+
+export default Location;

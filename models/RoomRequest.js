@@ -24,3 +24,5 @@ const RoomRequest = sequelize.define("room_requests", {
     tableName: "room_request",
     timestamps: false
 })
+
+export default RoomRequest;
