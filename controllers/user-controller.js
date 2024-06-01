@@ -5,6 +5,20 @@ import dotenv from "dotenv";
 // const bcrypt = require("bcrypt"),
 //   jwt = require("jsonwebtoken");
 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  port: 587,
+  secure: false,
+  debug: true,
+  auth: {
+      user: process.env.EMAIL_SENDER,
+      pass: process.env.PASS_SENDER
+  },
+  tls: {
+      rejectUnauthorized: true
+  }
+});
+
 dotenv.config();
 
 export const register = async (req, res) => {
@@ -41,10 +55,26 @@ export const register = async (req, res) => {
         password: password,
         role: role,
       });
-      res.status(201).json({
-        status: "Success",
-        data: newUser,
+      const verifyURL = `http://yourfrontend.com/user/verifyaccount`;
+      const mailOptions = {
+        to: newUser.email,
+        from: process.env.EMAIL_SENDER,
+        subject: 'Verifikasi Akun',
+        text: `Anda menerima email ini karena Anda telah Membuat Akun.\n\n` +
+              `Klik link berikut, atau salin dan tempel ke browser Anda untuk menyelesaikan proses pembuatan akun:\n\n` +
+              `${verifyURL}\n\n` +
+              `Jika Anda tidak membuat akun ini, abaikan email ini.\n`
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+          return res.status(500).json({ message: error.message });
+      }
+      res.status(200).json({ message: 'Account has been created, please check your email for confirmation', data: newUser });
       });
+      // res.status(201).json({
+      //   status: "Success",
+      //   data: newUser,
+      // });
     }
     catch (error) {
       console.log(error);
@@ -93,19 +123,6 @@ export const forgetPassword = async (req, res) => {
           });
         }
 
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          port: 587,
-          secure: false,
-          debug: true,
-          auth: {
-              user: process.env.EMAIL_SENDER,
-              pass: process.env.PASS_SENDER
-          },
-          tls: {
-              rejectUnauthorized: true
-          }
-        });
         const resetURL = `http://yourfrontend.com/reset-password?token=`;
         const mailOptions = {
           to: user.email,
