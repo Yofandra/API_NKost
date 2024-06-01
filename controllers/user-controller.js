@@ -55,7 +55,7 @@ export const register = async (req, res) => {
         password: password,
         role: role,
       });
-      const verifyURL = `http://yourfrontend.com/user/verifyaccount`;
+      const verifyURL = `http://localhost:3000/user/verify-account`;
       const mailOptions = {
         to: newUser.email,
         from: process.env.EMAIL_SENDER,
@@ -83,6 +83,45 @@ export const register = async (req, res) => {
       });
     }
 }
+
+export const verifyAccount = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user
+    = await User.findOne({
+      where: {
+        email: email,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({
+        message: "User tidak ditemukan",
+      });
+    }
+    if (user.status === "active") {
+      return res.status(400).json({
+        message: "Akun sudah diverifikasi",
+      });
+    }
+    const updateUser = await User.update({
+      status: "active",
+    }, {
+      where: {
+        email: email,
+      },
+    });
+    res.status(200).json({
+      status: "Success",
+      message: "Akun berhasil diverifikasi",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Server Error",
+    });
+  }
+}
+
 export const login = async (req, res) => {
     const { email, password } = req.body
     try {
@@ -123,7 +162,7 @@ export const forgetPassword = async (req, res) => {
           });
         }
 
-        const resetURL = `http://yourfrontend.com/reset-password?token=`;
+        const resetURL = `http://localhost:3000/user/reset-password?token=`;
         const mailOptions = {
           to: user.email,
           from: process.env.EMAIL_SENDER,
