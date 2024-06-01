@@ -1,9 +1,8 @@
 import User from "../models/User.js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-
-// const bcrypt = require("bcrypt"),
-//   jwt = require("jsonwebtoken");
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -49,10 +48,13 @@ export const register = async (req, res) => {
           message: "Email sudah terdaftar",
         });
       }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
       const newUser = await User.create({
         name: name,
         email: email,
-        password: password,
+        password: hashedPassword,
         role: role,
       });
       const verifyURL = `http://localhost:3000/user/verify-account`;
@@ -65,17 +67,15 @@ export const register = async (req, res) => {
               `${verifyURL}\n\n` +
               `Jika Anda tidak membuat akun ini, abaikan email ini.\n`
     };
+
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
           return res.status(500).json({ message: error.message });
       }
       res.status(200).json({ message: 'Account has been created, please check your email for confirmation', data: newUser });
       });
-      // res.status(201).json({
-      //   status: "Success",
-      //   data: newUser,
-      // });
     }
+
     catch (error) {
       console.log(error);
       res.status(500).json({
@@ -128,7 +128,6 @@ export const login = async (req, res) => {
         const user = await User.findOne({
           where: {
             email: email,
-            password: password,
           },
         });
         if (!user) {
@@ -136,11 +135,26 @@ export const login = async (req, res) => {
             message: "Email atau password salah",
           });
         }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+          return res.status(400).json({
+            message: "Email atau password salah",
+          });
+        }
+    
+        const token = jwt.sign(
+          { userId: user.id, role: user.role },
+          process.env.JWT_SECRET,
+          { expiresIn: '1h' }
+        );
+    
         res.status(200).json({
           status: "Success",
-          data: user,
+          token: token,
         });
       } 
+
       catch (error) {
         res.status(500).json({
           message: "Server Error",
@@ -249,6 +263,18 @@ export const deleteUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   const id = req.params.id;
   const { name, email } = req.body;
+
+  if (req.userId != id && req.userRole !== 'admin') {
+    return res.status(403).json({
+      message: "Anda tidak memiliki izin untuk mengubah data ini",
+    });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+      return res.status(400).json({
+          message: "Email tidak valid",
+      })};
     try {
         const user = await User.update({
           name: name,
@@ -263,6 +289,7 @@ export const updateUser = async (req, res) => {
             status: "Success",
             message: "Berhasil mengubah data",
         });
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({
