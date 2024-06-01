@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { findAll, findOne, update } from "../controllers/profile-controller.js";
+import { findAll, getUserById, deleteUser, updateUser } from "../controllers/profile-controller.js";
+import verifyToken from "../middlewares/authJwt.js";
 const profileRoute = Router();
 
-profileRoute.get("/", findAll);
-profileRoute.get("/:id", findOne);
-profileRoute.put("/:id", update);
+profileRoute.get("/", verifyToken, findAll);
+profileRoute.get("/:id", verifyToken, getUserById);
+profileRoute.put('/:id', verifyToken, updateUser);
+profileRoute.delete("/:id", verifyToken, deleteUser);
 
 export default profileRoute;
