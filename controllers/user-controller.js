@@ -62,11 +62,15 @@ export const register = async (req, res) => {
         to: newUser.email,
         from: process.env.EMAIL_SENDER,
         subject: 'Verifikasi Akun',
-        text: `Anda menerima email ini karena Anda telah Membuat Akun.\n\n` +
-              `Klik link berikut, atau salin dan tempel ke browser Anda untuk menyelesaikan proses pembuatan akun:\n\n` +
+        text: `Hai ${newUser.name},\n\n` +
+              `Terima kasih telah mendaftar di platform kami.\n\n` +
+              `Untuk menyelesaikan proses pembuatan akun kamu, silakan verifikasi email Anda dengan mengklik tautan di bawah ini atau menyalinnya ke browser kamu:\n\n` +
               `${verifyURL}\n\n` +
-              `Jika Anda tidak membuat akun ini, abaikan email ini.\n`
-    };
+              `Jika kamu tidak merasa melakukan pendaftaran ini, kamu dapat mengabaikan email ini dengan aman.\n\n` +
+              `Terima kasih,\n` +
+              `Tim Kami \n` +
+              `nKost`
+      };      
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
@@ -176,16 +180,21 @@ export const forgetPassword = async (req, res) => {
           });
         }
 
-        const resetURL = `http://localhost:3000/user/reset-password?token=`;
+        const resetURL = `http://localhost:3000/user/reset-password?token=${user.token}`;
         const mailOptions = {
           to: user.email,
           from: process.env.EMAIL_SENDER,
-          subject: 'Password Reset',
-          text: `Anda menerima email ini karena Anda telah meminta reset password untuk akun Anda.\n\n` +
-                `Klik link berikut, atau salin dan tempel ke browser Anda untuk menyelesaikan prosesnya:\n\n` +
+          subject: 'Reset Password Anda',
+          text: `Hai ${user.name},\n\n` +
+                `Kami menerima permintaan untuk mereset password akun Anda.\n\n` +
+                `Untuk melanjutkan proses reset password, silakan klik tautan di bawah ini atau salin dan tempel ke browser Anda:\n\n` +
                 `${resetURL}\n\n` +
-                `Jika Anda tidak meminta ini, abaikan email ini dan password Anda akan tetap aman.\n`
-      };
+                `Jika Anda tidak merasa melakukan permintaan ini, Anda dapat mengabaikan email ini dengan aman. Password Anda akan tetap aman.\n\n` +
+                `Terima kasih,\n` +
+                `Tim Kami` +
+                `nKost`
+        };
+        
 
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
