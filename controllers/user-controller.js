@@ -1,24 +1,7 @@
 import User from "../models/User.js";
-import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  port: 587,
-  secure: false,
-  debug: true,
-  auth: {
-      user: process.env.EMAIL_SENDER,
-      pass: process.env.PASS_SENDER
-  },
-  tls: {
-      rejectUnauthorized: true
-  }
-});
-
-dotenv.config();
+import { sendEmail } from "../middlewares/emailService.js";
 
 export const register = async (req, res) => {
     const { name, email, password, role } = req.body
@@ -33,7 +16,7 @@ export const register = async (req, res) => {
             message: "Email tidak valid",
         })};
       
-    const allowedRoles = ["penyewa", "pemilik", "admin"];
+    const allowedRoles = ["penyewa", "pemilik"];
     if (!allowedRoles.includes(role)) {
         return res.status(400).json({
             message: "Role tidak valid",
@@ -58,29 +41,22 @@ export const register = async (req, res) => {
         role: role,
       });
       const verifyURL = `http://localhost:3000/user/verify-account`;
-      const mailOptions = {
-        to: newUser.email,
-        from: process.env.EMAIL_SENDER,
-        subject: 'Verifikasi Akun',
-        text: `Hai ${newUser.name},\n\n` +
-              `Terima kasih telah mendaftar di platform kami.\n\n` +
-              `Untuk menyelesaikan proses pembuatan akun kamu, silakan verifikasi email Anda dengan mengklik tautan di bawah ini atau menyalinnya ke browser kamu:\n\n` +
-              `${verifyURL}\n\n` +
-              `Jika kamu tidak merasa melakukan pendaftaran ini, kamu dapat mengabaikan email ini dengan aman.\n\n` +
-              `Terima kasih,\n` +
-              `Tim Kami \n` +
-              `nKost`
-      };      
+      const emailContent =  `Hai ${newUser.name},\n\n` +
+        `Terima kasih telah mendaftar di platform kami.\n\n` +
+        `Untuk menyelesaikan proses pembuatan akun kamu, silakan verifikasi email Anda dengan mengklik tautan di bawah ini atau menyalinnya ke browser kamu:\n\n` +
+        `${verifyURL}\n\n` +
+        `Jika kamu tidak merasa melakukan pendaftaran ini, kamu dapat mengabaikan email ini dengan aman.\n\n` +
+        `Terima kasih,\n` +
+        `Tim Kami \n` +
+        `nKost`;
+          
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-          return res.status(500).json({ message: error.message });
-      }
-      res.status(200).json({ message: 'Account has been created, please check your email for confirmation', data: newUser });
-      });
-    }
-
-    catch (error) {
+    await sendEmail(newUser.email, 'Verifikasi Akun', emailContent);
+    res.status(200).json({ 
+      message: 'Akun telah dibuat, silahkan cek email Anda untuk verifikasi akun.'
+    });
+    
+    } catch (error) {
       console.log(error);
       res.status(500).json({
         message: "Server Error",
@@ -152,11 +128,13 @@ export const login = async (req, res) => {
           process.env.JWT_SECRET,
           { expiresIn: '1h' }
         );
-    
+
+        user.last_login = new Date();
+        await user.save();
+        
         res.status(200).json({
           status: "Success",
           token: token,
-          data: user,
         });
       } 
 
@@ -182,29 +160,22 @@ export const forgetPassword = async (req, res) => {
         }
 
         const resetURL = `http://localhost:3000/user/reset-password?token=${user.token}`;
-        const mailOptions = {
-          to: user.email,
-          from: process.env.EMAIL_SENDER,
-          subject: 'Reset Password Anda',
-          text: `Hai ${user.name},\n\n` +
-                `Kami menerima permintaan untuk mereset password akun Anda.\n\n` +
-                `Untuk melanjutkan proses reset password, silakan klik tautan di bawah ini atau salin dan tempel ke browser Anda:\n\n` +
-                `${resetURL}\n\n` +
-                `Jika Anda tidak merasa melakukan permintaan ini, Anda dapat mengabaikan email ini dengan aman. Password Anda akan tetap aman.\n\n` +
-                `Terima kasih,\n` +
-                `Tim Kami` +
-                `nKost`
-        };
+        const emailContent =  `Hai ${user.name},\n\n` +
+          `Kami menerima permintaan untuk mereset password akun Anda.\n\n` +
+          `Untuk melanjutkan proses reset password, silakan klik tautan di bawah ini atau salin dan tempel ke browser Anda:\n\n` +
+          `${resetURL}\n\n` +
+          `Jika Anda tidak merasa melakukan permintaan ini, Anda dapat mengabaikan email ini dengan aman. Password Anda akan tetap aman.\n\n` +
+          `Terima kasih,\n` +
+          `Tim Kami \n` +
+          `nKost`;
+  
         
+        await sendEmail(user.email, 'Reset Password Anda', emailContent);
+        res.status(200).json({ 
+          message: 'Reset password telah dikirim' 
+        });
 
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            return res.status(500).json({ message: error.message });
-        }
-        res.status(200).json({ message: 'Password reset email sent' });
-    });
-      }
-      catch (error) {
+      } catch (error) {
         console.log(error);
         res.status(500).json({
           message: "Server Error",
