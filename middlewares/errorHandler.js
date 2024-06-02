@@ -23,10 +23,6 @@ const errorHandler = (err, req, res) => {
       statusCode = 403;
       message = "Invalid Email Format";
       break;
-    case "Not_Req_Permission":
-      statusCode = 403;
-      message = "This quiz does not require permission";
-      break;
     case "Not_Found":
       statusCode = 404;
       message = "Not Found";

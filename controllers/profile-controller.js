@@ -51,6 +51,10 @@ export const getUserById = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const nameRegex = /^[^!,]+$/;
     try {
+        if (req.params.id != req.userId) {
+            const error = new Error("Unauthorized");
+            return errorHandler(error, req, res);
+        }
         if (req.body.password) {
             req.body.password = await bcrypt.hash(req.body.password, 10);
         }
