@@ -31,8 +31,8 @@ const verifyToken = (req, res, next) => {
           });
         }
       } else {
-        req.userId = decoded.userId;
-        req.userRole = decoded.role;
+        res.locals.userId = decoded.userId;
+        res.locals.userRole = decoded.role;
         return next();
       }
     });
