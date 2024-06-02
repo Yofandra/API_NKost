@@ -33,6 +33,12 @@ const verifyToken = (req, res, next) => {
       } else {
         res.locals.userId = decoded.userId;
         res.locals.userRole = decoded.role;
+        res.locals.status = decoded.status;
+        if (res.locals.status === "pending") {
+          return res.status(401).json({
+            message: "Akun anda belum aktif, silahkan verifikasi email anda",
+          });
+        }
         return next();
       }
     });
