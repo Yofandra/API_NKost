@@ -4,15 +4,9 @@ import errorHandler from "../middlewares/errorHandler.js";
 
 export const findAll = async (req, res) => {
     try {
-        if (req.userRole !== 'admin') {
-          return res.status(403).json({
-            message: `Anda tidak memiliki izin untuk mengakses data ini, role anda adalah ${req.userRole}`
-          });
-        }
         const users = await User.findAll();
         res.status(200).json({
             status: "Success",
-            message: `role: ${req.userRole}`,
             data: users, 
         });
     } catch (err) {
@@ -28,11 +22,6 @@ export const findAll = async (req, res) => {
 
 export const getUserById = async (req, res) => {
     const id = req.params.id;
-    if (req.userId != id && req.userRole !== 'admin') {
-        return res.status(403).json({
-          message: "Anda tidak memiliki izin untuk mengubah data ini",
-        });
-      }
     try {  
       const user = await User.findByPk(id, {
         attributes: ['name', 'email'], 
@@ -61,11 +50,6 @@ export const getUserById = async (req, res) => {
     const id = req.params.id;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const nameRegex = /^[^!,]+$/;
-    if (req.userId != id && req.userRole !== 'admin') {
-      return res.status(403).json({
-        message: "Anda tidak memiliki izin untuk mengubah data ini",
-      })};
-    
     try {
         if (req.body.password) {
             req.body.password = await bcrypt.hash(req.body.password, 10);
