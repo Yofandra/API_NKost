@@ -13,4 +13,4 @@ route.post('/login', login)
 route.delete('/delete/:id', deleteUser)
 route.post('/reset-password', forgetPassword)
 
-export default  route
+export default route

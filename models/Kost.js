@@ -11,15 +11,11 @@ const Kost = sequelize.define("kosts", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    id_location: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
     name_kost: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    description: {
+    description_kost: {
         type: DataTypes.STRING,
         allowNull: false,
     },

@@ -51,9 +51,9 @@ const errorHandler = (err, req, res) => {
       statusCode = 409;
       message = "Data Already Exist";
       break;
-    case "Score_Exist":
-      statusCode = 409;
-      message = "Quiz Already Taken";
+    case "Invalid_File_Type":
+      statusCode = 422;
+      message = "Invalid File Type";
       break;
     default:
       statusCode = 500;
