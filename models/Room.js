@@ -27,7 +27,15 @@ const Room = sequelize.define("rooms", {
     description:{
         type: DataTypes.STRING,
         allowNull: false,
-    }
+    },
+    image: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    url_image: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
 },{
     tableName: "rooms",
     timestamps: false

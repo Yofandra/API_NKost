@@ -25,6 +25,11 @@ const User = sequelize.define("users", {
         allowNull: false,
         defaultValue: "penyewa",
     },
+    status: {
+        type: DataTypes.ENUM("pending", "active"),
+        allowNull: false,
+        defaultValue: "pending",
+    },
     last_login: {
         type: DataTypes.DATE,
     },
