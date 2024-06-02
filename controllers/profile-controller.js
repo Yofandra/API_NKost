@@ -1,14 +1,23 @@
 import User from "../models/User.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import errorHandler from "../middlewares/errorHandler.js";
 
 export const findAll = async (req, res) => {
     try {
+        if (req.userRole !== 'admin') {
+          return res.status(403).json({
+            message: `Anda tidak memiliki izin untuk mengakses data ini, role anda adalah ${req.userRole}`
+          });
+        }
         const users = await User.findAll();
-        res.json(users);
+        res.status(200).json({
+            status: "Success",
+            message: `role: ${req.userRole}`,
+            data: users, 
+        });
     } catch (err) {
         if (User.length === 0) {
-            const error = new Error("Not_Found");
+            const error = new Error("Tidak Ditemukan!");
             return errorHandler(error, req, res);
         } else {
             const error = new Error(err.message);
@@ -17,27 +26,54 @@ export const findAll = async (req, res) => {
     }
 }
 
-export const findOne = async (req, res) => {
-    try {
-        const user = await User.findByPk(req.params.id);
-        if (user) {
-            res.json(user);
-        } else {
-            const error = new Error("Not_Found");
-            return errorHandler(error, req, res);
-        }
-    } catch (err) {
-        const error = new Error(err.message);
-        return errorHandler(error, req, res);
+export const getUserById = async (req, res) => {
+    const id = req.params.id;
+    if (req.userId != id && req.userRole !== 'admin') {
+        return res.status(403).json({
+          message: "Anda tidak memiliki izin untuk mengubah data ini",
+        });
+      }
+    try {  
+      const user = await User.findByPk(id, {
+        attributes: ['name', 'email'], 
+      });
+  
+      if (!user) {
+        return res.status(404).json({
+          message: "User tidak ditemukan",
+        });
+      }
+  
+      res.status(200).json({
+        status: "Success",
+        data: user,
+      });
+  
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        message: "Server Error",
+      });
     }
-}
+  }
 
-export const update = async (req, res) => {
+  export const updateUser = async (req, res) => {
+    const id = req.params.id;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const nameRegex = /^[^!,]+$/;
+    if (req.userId != id && req.userRole !== 'admin') {
+      return res.status(403).json({
+        message: "Anda tidak memiliki izin untuk mengubah data ini",
+      })};
+    
     try {
         if (req.body.password) {
             req.body.password = await bcrypt.hash(req.body.password, 10);
         }
+        if (!nameRegex.test(req.body.name)) {
+            return res.status(400).json({
+              message: "Nama tidak boleh mengandung tanda seru atau koma",
+            })};
         if (req.body.email) {
             if (!emailRegex.test(req.body.email)) {
                 const error = new Error("Invalid_Email");
@@ -51,12 +87,52 @@ export const update = async (req, res) => {
             }
         }
         delete req.body.last_login;
+
         await User.update(req.body, {
             where: { id: req.params.id }
         });
-        res.json({ message: "User updated successfully" });
-    } catch (err) { 
-        const error = new Error(err.message);
-        return errorHandler(error, req, res);
-    }
+
+        res.status(200).json({
+            status: "Success",
+            message: "Berhasil mengubah data",
+        });
+    } catch (error) {
+          console.log(error);
+          res.status(500).json({
+              message: "Server Error",
+          });
+      }
 }
+
+export const deleteUser = async (req, res) => {
+    const id = req.params.id;
+
+    if (req.userId != id && req.userRole !== 'admin') {
+        return res.status(403).json({
+          message: "Anda tidak memiliki izin untuk mengubah data ini",
+        });
+      }
+
+    try {
+      const user = await User.destroy({
+        where: {
+          id: id,
+        },
+      });
+      if (!user) {
+        return res.status(404).json({
+          message: "User tidak ditemukan",
+        });
+      }
+      res.status(200).json({
+        status: "Success",
+        message: "Berhasil menghapus data",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        message: "Server Error",
+      });
+    }
+  }
+        
