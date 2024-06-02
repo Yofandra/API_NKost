@@ -3,6 +3,8 @@ import errorHandler from "../middlewares/errorHandler.js";
 import path from "path";
 import fs from "fs";
 
+// All User
+
 export const findAll = async (req, res) => {
     try {
         const kosts = await Kost.findAll();
@@ -16,6 +18,7 @@ export const findAll = async (req, res) => {
         }
     }
 }
+
 
 export const findOne = async (req, res) => {
     try {
@@ -32,8 +35,10 @@ export const findOne = async (req, res) => {
     }
 }
 
+// Penyewa
+
 export const create = async (req, res) => {
-    const id_user = req.body.id_user;
+    const id_user = res.locals.userId;
     const name_kost = req.body.name_kost;
     const description_kost = req.body.description_kost;
     const file =  req.files.file;
