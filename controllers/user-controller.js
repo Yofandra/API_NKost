@@ -16,7 +16,7 @@ export const register = async (req, res) => {
             message: "Email tidak valid",
         })};
       
-    const allowedRoles = ["penyewa", "pemilik", "admin"];
+    const allowedRoles = ["penyewa", "pemilik"];
     if (!allowedRoles.includes(role)) {
         return res.status(400).json({
             message: "Role tidak valid",
@@ -128,7 +128,10 @@ export const login = async (req, res) => {
           process.env.JWT_SECRET,
           { expiresIn: '1h' }
         );
-    
+
+        user.last_login = new Date();
+        await user.save();
+        
         res.status(200).json({
           status: "Success",
           token: token,
