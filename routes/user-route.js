@@ -8,4 +8,4 @@ route.post('/login', login)
 route.post('/reset-password', forgetPassword)
 route.post('/verify-account', verifyAccount)
 
-export default  route
+export default route

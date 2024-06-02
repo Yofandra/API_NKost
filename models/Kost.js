@@ -15,7 +15,7 @@ const Kost = sequelize.define("kosts", {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    description: {
+    description_kost: {
         type: DataTypes.STRING,
         allowNull: false,
     },
