@@ -3,8 +3,6 @@ import errorHandler from "../middlewares/errorHandler.js";
 import path from "path";
 import fs from "fs";
 
-// All User
-
 export const findAll = async (req, res) => {
     try {
         const kosts = await Kost.findAll();
@@ -18,7 +16,6 @@ export const findAll = async (req, res) => {
         }
     }
 }
-
 
 export const findOne = async (req, res) => {
     try {
@@ -34,8 +31,6 @@ export const findOne = async (req, res) => {
         return errorHandler(error, req, res);
     }
 }
-
-// Penyewa
 
 export const create = async (req, res) => {
     const id_user = res.locals.userId;
@@ -70,6 +65,22 @@ export const create = async (req, res) => {
         }
     });
 }
+
+export const checkPermission = async (req, res, next) => {
+    try {
+        const kost = await Kost.findOne({
+            where: { id: req.params.id },
+            attributes: ['id_user']
+        });
+        const {id_user} = kost;
+        if (id_user !== res.locals.userId) {
+            return res.status(401).json({ message: 'Anda tidak memiliki izin' });
+        }
+        next();
+    } catch (err) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
 
 export const update = async (req, res) => {
     const kost = await Kost.findByPk(req.params.id);
