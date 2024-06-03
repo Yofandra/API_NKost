@@ -29,6 +29,19 @@ export const findOne = async (req, res) => {
     }
 }
 
+export const findByIdUser = async (req, res) => {
+    try {
+        const kosts = await Kost.findAll({ where: { id_user: res.locals.userId } });
+        if (kosts.length === 0) {
+            res.json({ message: "Masih belum memiliki kost" });
+        } else {
+            res.json(kosts);
+        }
+    } catch (err) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
 export const create = async (req, res) => {
     const id_user = res.locals.userId;
     const name_kost = req.body.name_kost;
