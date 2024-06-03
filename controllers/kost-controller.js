@@ -11,8 +11,7 @@ export const findAll = async (req, res) => {
         if (Kost.length === 0) {
             res.json({ message: "Null" });
         } else {
-            const error = new Error(err.message);
-            return errorHandler(error, req, res);
+            return res.status(500).json({ message: 'Internal Server Error' });
         }
     }
 }
@@ -23,12 +22,10 @@ export const findOne = async (req, res) => {
         if (kost) {
             res.json(kost);
         } else {
-            const error = new Error("Not_Found");
-            return errorHandler(error, req, res);
+            return res.status(404).json({ message: 'Data tidak ditemukan' });
         }
     } catch (err) {
-        const error = new Error(err.message);
-        return errorHandler(error, req, res);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
 
@@ -43,14 +40,12 @@ export const create = async (req, res) => {
     const allowedTypes = [".jpg", ".jpeg", ".png"];
 
     if (!allowedTypes.includes(ext.toLowerCase())) {
-        const error = new Error("Invalid_File_Type");
-        return errorHandler(error, req, res);
+        return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
     }
 
     file.mv(`./public/images/${fileName}`, async (err) => {
         if (err) {
-            const error = new Error('err.message');
-            return errorHandler(error, req, res);
+            return res.status(500).json({ message: 'Internal Server Error' });
         }
         try {
             await Kost.create({id_user: id_user,
@@ -60,8 +55,7 @@ export const create = async (req, res) => {
                     url_image: url_image,});
             res.json({ message: "Kost created successfully" });
         } catch (err) {
-            const error = new Error(err.message);
-            return errorHandler(error, req, res);
+            return res.status(500).json({ message: 'Internal Server Error' });
         }
     });
 }
@@ -85,8 +79,7 @@ export const checkPermission = async (req, res, next) => {
 export const update = async (req, res) => {
     const kost = await Kost.findByPk(req.params.id);
     if (!kost) {
-        const error = new Error("Not_Found");
-        return errorHandler(error, req, res);
+        return res.status(404).json({ message: 'Data tidak ditemukan' });
     }
     let fileName = "";
     if(req.files === null){
@@ -98,8 +91,7 @@ export const update = async (req, res) => {
         const allowedTypes = [".jpg", ".jpeg", ".png"];
 
         if (!allowedTypes.includes(ext.toLowerCase())) {
-            const error = new Error("Invalid_File_Type");
-            return errorHandler(error, req, res);
+            return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
         }
 
         const filepath = `./public/images/${kost.image}`;
@@ -107,8 +99,7 @@ export const update = async (req, res) => {
 
         file.mv(`./public/images/${fileName}`, (err) => {
             if (err) {
-                const error = new Error(err.message);
-                return errorHandler(error, req, res);
+                return res.status(500).json({ message: 'Internal Server Error' });
             }
         });
     }
@@ -124,16 +115,14 @@ export const update = async (req, res) => {
         });
         res.json({ message: "Kost updated successfully" });
     } catch (err) {
-        const error = new Error(err.message);
-        return errorHandler(error, req, res);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
 
 export const remove = async (req, res) => {
     const kost = await Kost.findByPk(req.params.id);
     if (!kost) {
-        const error = new Error("Not_Found");
-        return errorHandler(error, req, res);
+        return res.status(404).json({ message: 'Data tidak ditemukan' });
     }
     try {
         fs.unlinkSync(`./public/images/${kost.image}`);
@@ -144,7 +133,6 @@ export const remove = async (req, res) => {
         });
         res.json({ message: "Kost deleted successfully" });
     } catch (err) {
-        const error = new Error(err.message);
-        return errorHandler(error, req, res);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
