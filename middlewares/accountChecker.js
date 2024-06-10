@@ -42,3 +42,12 @@ export const statusAccess = async (req, res, next) => {
     })};
 }
 
+export const Pemilik = (req, res, next) => {
+  if (res.locals.userRole !== 'pemilik') {
+    return res.status(403).json({
+      message: "Anda tidak memiliki izin untuk mengakses data ini",
+    });
+  }
+  next();
+};
+
