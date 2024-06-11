@@ -9,6 +9,8 @@ import profileRoute from "./routes/profile-route.js";
 import userRoute from "./routes/user-route.js"
 import kostRoute from "./routes/kost-route.js";
 import locationRoute from "./routes/location-route.js";
+import roomRoute from "./routes/room-route.js";
+import roomRequestRoute from "./routes/roomRequest.js"
 
 dotenv.config();
 
@@ -26,6 +28,8 @@ app.use("/profile", profileRoute);
 app.use('/user', userRoute)
 app.use("/kost", kostRoute);
 app.use("/location", locationRoute);
+app.use("/room", roomRoute);
+app.use("/roomRequest", roomRequestRoute);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
