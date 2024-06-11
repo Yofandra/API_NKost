@@ -8,12 +8,8 @@ kostRoute.use(verifyToken, statusAccess);
 kostRoute.get("/", findAll);
 kostRoute.get("/from/:id", findOne);
 kostRoute.get("/owner", findByIdUser);
-kostRoute.post("/", create);
-kostRoute.put("/:id", checkPermission, update);
-kostRoute.delete("/:id",checkPermission, remove);
-// kostRoute.get("/:id", findOne);
-// kostRoute.post("/", Pemilik, create);
-// kostRoute.put("/:id", checkPermission, Pemilik, update);
-// kostRoute.delete("/:id",checkPermission, Pemilik, remove);
+kostRoute.post("/",Pemilik, create);
+kostRoute.put("/:id", Pemilik, checkPermission, update);
+kostRoute.delete("/:id", Pemilik, checkPermission, remove);
 
 export default kostRoute;
