@@ -8,6 +8,8 @@ import cors from "cors";
 import profileRoute from "./routes/profile-route.js";
 import userRoute from "./routes/user-route.js"
 import kostRoute from "./routes/kost-route.js";
+import roomRoute from "./routes/room-route.js";
+import roomRequestRoute from "./routes/roomRequest.js"
 
 dotenv.config();
 
@@ -24,6 +26,8 @@ app.get("/", (req, res) => res.json({ msg: "Hello World" }));
 app.use("/profile", profileRoute);
 app.use('/user', userRoute)
 app.use("/kost", kostRoute);
+app.use("/room", roomRoute);
+app.use("/roomRequest", roomRequestRoute);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
