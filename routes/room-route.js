@@ -8,7 +8,7 @@ const roomRoute = Router()
 roomRoute.use(verifyToken, statusAccess)
 
 roomRoute.get('/', getRoom)
-roomRoute.post('/', createRoom)
+roomRoute.post('/create', createRoom)
 roomRoute.put('/:id', updateRoom)
 roomRoute.delete('/:id', deleteRoom)
 

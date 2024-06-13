@@ -1,4 +1,4 @@
-import RoomRequest from "../models/RoomRequest";
+import RoomRequest from "../models/RoomRequest.js";
 import { sendEmail } from "../middlewares/emailService.js";
 
 export const createRoomRequest = async (req, res) => {

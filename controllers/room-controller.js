@@ -3,17 +3,17 @@ import path from "path";
 import fs from "fs";
 
 export const createRoom = async (req, res) => {     
-    const id_kost = req.body.id_kost;
-    const id_user = req.body.id_user;
-    const status = req.body.status; 
-    const price = req.body.price; 
-    const description = req.body.description;
+    const { id_kost, id_user, status, price, description } = req.body;
     const file =  req.files.file;
     const ext = path.extname(file.name); 
     const fileName = file.md5 + ext; 
     const url_image = `${req.protocol}://${req.get("host")}/images/${fileName}`;
     const allowedTypes = [".jpg", ".jpeg", ".png"];
 
+    if (!req.files || !req.files.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+    
     if (!allowedTypes.includes(ext.toLowerCase())) {
         return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
     }
