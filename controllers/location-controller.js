@@ -92,7 +92,6 @@ export const create = async (req, res) => {
         const location = await Location.create({id_kost, detail, village, subdistrict, regency, point_gmap});
         res.json({message: 'Data berhasil ditambahkan', data: location})
     }catch(err){
-        console.log(err)
         return res.status(500).json({message: 'Internal Server Error'})
     }
 }
