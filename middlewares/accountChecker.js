@@ -51,3 +51,12 @@ export const Pemilik = (req, res, next) => {
   next();
 };
 
+export const Penyewa = (req, res, next) => {
+  if (res.locals.userRole !== 'penyewa') {
+    return res.status(403).json({
+      message: "Anda tidak memiliki izin untuk mengakses data ini",
+    });
+  }
+  next();
+};
+
