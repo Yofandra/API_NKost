@@ -24,7 +24,7 @@ const Room = sequelize.define("rooms", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    description:{
+    description_room:{
         type: DataTypes.STRING,
         allowNull: false,
     },
