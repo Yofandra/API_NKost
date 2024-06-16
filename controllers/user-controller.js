@@ -2,6 +2,8 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../middlewares/emailService.js";
+import crypto from 'crypto';
+import { Op } from 'sequelize';
 
 export const register = async (req, res) => {
     const { name, email, password, role } = req.body
@@ -155,11 +157,18 @@ export const forgetPassword = async (req, res) => {
         });
         if (!user) {
           return res.status(404).json({
-            message: "User tidak ditemukan",
+            message: "email tidak ditemukan",
           });
         }
 
-        const resetURL = `http://localhost:3000/user/reset-password?token=${user.token}`;
+        const token = crypto.randomBytes(20).toString('hex');
+        const tokenExpiry = Date.now() + 3600000;
+
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = tokenExpiry;
+        await user.save();
+
+        const resetURL = `http://localhost:3000/user/reset-password?token=${token}`;
         const emailContent =  `Hai ${user.name},\n\n` +
           `Kami menerima permintaan untuk mereset password akun Anda.\n\n` +
           `Untuk melanjutkan proses reset password, silakan klik tautan di bawah ini atau salin dan tempel ke browser Anda:\n\n` +
@@ -184,31 +193,38 @@ export const forgetPassword = async (req, res) => {
 }
 
 export const resetPassword = async (req, res) => {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const { token } = req.params;
+
+    console.log('Token received:', token); 
+    console.log('Current Time:', Date.now());
+
     try {
         const user = await User.findOne({
           where: {
-            email: email,
+            resetPasswordToken: token,
+            resetPasswordExpires: { [Op.gt]: Date.now() }
           },
         });
+        console.log(user)
         if (!user) {
           return res.status(404).json({
-            message: "User tidak ditemukan",
+            message: "Token tidak valid atau telah kadaluarsa",
           });
         }
-        const updateUser = await User.update({
-          password: password,
-        }, {
-          where: {
-            email: email,
-          },
-        });
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        user.password = hashedPassword;
+        user.resetPasswordToken = null;
+        user.resetPasswordExpires = null;
+        await user.save();
+
         res.status(200).json({
           status: "Success",
           message: "Password berhasil direset",
         });
-      }
-      catch (error) {
+
+      } catch (error) {
         console.log(error);
         res.status(500).json({
           message: "Server Error",

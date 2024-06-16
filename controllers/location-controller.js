@@ -92,7 +92,6 @@ export const create = async (req, res) => {
         const location = await Location.create({id_kost, detail, village, subdistrict, regency, point_gmap});
         res.json({message: 'Data berhasil ditambahkan', data: location})
     }catch(err){
-        console.log(err)
         return res.status(500).json({message: 'Internal Server Error'})
     }
 }
@@ -123,8 +122,8 @@ export const checkPermission = async (req, res, next) => {
 };
 
 export const update = async (req, res) => {
-    const { id_kost, detail, village, subdistrict, regency } = req.body;
-    if(!id_kost || !detail || !village || !subdistrict || !regency){
+    const { detail, village, subdistrict, regency } = req.body;
+    if(!detail || !village || !subdistrict || !regency){
         return res.status(400).json({message: 'Data tidak lengkap'})
     }
     try{
@@ -149,7 +148,7 @@ export const update = async (req, res) => {
         if(!location){
             return res.status(404).json({message: 'Data tidak ditemukan'})
         }
-        await location.update({id_kost, detail, village, subdistrict, regency, point_gmap}, {where: {id: req.params.id}});
+        await location.update({detail, village, subdistrict, regency, point_gmap}, {where: {id: req.params.id}});
         res.json({message: 'Data berhasil diubah', data: location})
     }catch(err){
         return res.status(500).json({message: 'Internal Server Error'})

@@ -11,6 +11,7 @@ import kostRoute from "./routes/kost-route.js";
 import locationRoute from "./routes/location-route.js";
 import roomRoute from "./routes/room-route.js";
 import roomRequestRoute from "./routes/roomRequest.js"
+import ratingRoute from "./routes/rating-route.js";
 import reportRoute from "./routes/report-route.js";
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use("/kost", kostRoute);
 app.use("/location", locationRoute);
 app.use("/room", roomRoute);
 app.use("/roomRequest", roomRequestRoute);
+app.use("/rating", ratingRoute);
 app.use("/report", reportRoute);
 
 app.listen(PORT, () => {
