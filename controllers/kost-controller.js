@@ -1,5 +1,4 @@
 import Kost from "../models/Kost.js";
-import errorHandler from "../middlewares/errorHandler.js";
 import path from "path";
 import fs from "fs";
 
