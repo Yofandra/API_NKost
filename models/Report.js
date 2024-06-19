@@ -19,7 +19,10 @@ const Report = sequelize.define("reports", {
         type: DataTypes.STRING,
         allowNull: false,
     
-    }
+    },
+    report_date: {
+        type: DataTypes.DATE,
+    },
 },{
     tableName: "report",
     timestamps: false

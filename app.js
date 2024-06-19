@@ -13,6 +13,7 @@ import roomRoute from "./routes/room-route.js";
 import roomRequestRoute from "./routes/roomRequest.js"
 import reportRoute from "./routes/report-route.js";
 import ratingRoute from "./routes/rating-route.js";
+import reportRoute from "./routes/report-route.js";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/room", roomRoute);
 app.use("/roomRequest", roomRequestRoute);
 app.use("/report", reportRoute);
 app.use("/rating", ratingRoute);
+app.use("/report", reportRoute);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

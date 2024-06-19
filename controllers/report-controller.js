@@ -23,6 +23,7 @@ export const createReport = async (req, res) => {
             id_user: id_user,
             id_room: room.id,
             description_report: description,
+            report_date: new Date(),
         });
 
         const emailContent =  `Hai ${user.name},\n\n` +

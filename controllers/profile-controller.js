@@ -46,7 +46,7 @@ export const getUserById = async (req, res) => {
     }
   }
 
-  export const updateUser = async (req, res) => {
+  export const updateUserById = async (req, res) => {
     const id = req.params.id;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const nameRegex = /^[^!,]+$/;
@@ -90,6 +90,47 @@ export const getUserById = async (req, res) => {
               message: "Server Error",
           });
       }
+}
+
+export const updateUser = async (req, res) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const nameRegex = /^[^!,]+$/;
+  try {
+      if (req.body.password) {
+          req.body.password = await bcrypt.hash(req.body.password, 10);
+      }
+      if (!nameRegex.test(req.body.name)) {
+          return res.status(400).json({
+            message: "Nama tidak boleh mengandung tanda seru atau koma",
+          })};
+      if (req.body.email) {
+          if (!emailRegex.test(req.body.email)) {
+              const error = new Error("Invalid_Email");
+              return errorHandler(error, req, res);
+          } else {
+              const user = await User.findOne({ where: { email: req.body.email } });
+              if (user) {
+                  const error = new Error("Email_Exist");
+                  return errorHandler(error, req, res);
+              }   
+          }
+      }
+      delete req.body.last_login;
+
+      await User.update(req.body, {
+          where: { id: res.locals.userId }
+      });
+
+      res.status(200).json({
+          status: "Success",
+          message: "Berhasil mengubah data",
+      });
+  } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Server Error",
+        });
+    }
 }
 
 export const deleteUser = async (req, res) => {
