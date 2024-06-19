@@ -15,7 +15,7 @@ const Report = sequelize.define("reports", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    description:{
+    description_report:{
         type: DataTypes.STRING,
         allowNull: false,
     
