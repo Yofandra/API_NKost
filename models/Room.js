@@ -36,6 +36,10 @@ const Room = sequelize.define("rooms", {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    num_room:{
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
 },{
     tableName: "rooms",
     timestamps: false
