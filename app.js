@@ -13,7 +13,6 @@ import roomRoute from "./routes/room-route.js";
 import roomRequestRoute from "./routes/roomRequest.js"
 import reportRoute from "./routes/report-route.js";
 import ratingRoute from "./routes/rating-route.js";
-import reportRoute from "./routes/report-route.js";
 
 dotenv.config();
 

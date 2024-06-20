@@ -51,6 +51,10 @@ export const create = async (req, res) => {
     const url_image = `${req.protocol}://${req.get("host")}/images/${fileName}`;
     const allowedTypes = [".jpg", ".jpeg", ".png"];
 
+    if (!req.files || !req.files.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+
     if (!allowedTypes.includes(ext.toLowerCase())) {
         return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
     }

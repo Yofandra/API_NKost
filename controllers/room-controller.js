@@ -3,12 +3,12 @@ import path from "path";
 import fs from "fs";
 
 export const createRoom = async (req, res) => {     
-    const { id_kost, id_user, status, price, description } = req.body;
+    const { id_kost, num_room, price, description } = req.body;
     const file =  req.files.file;
     const ext = path.extname(file.name); 
-    const fileName = file.md5 + ext; 
+    const fileName = file.md5 + ext;  
     const url_image = `${req.protocol}://${req.get("host")}/images/${fileName}`;
-    const allowedTypes = [".jpg", ".jpeg", ".png"];
+    const allowedTypes = [".jpg", ".jpeg", ".png", "webp"];
 
     if (!req.files || !req.files.file) {
         return res.status(400).json({ message: 'No file uploaded' });
@@ -24,11 +24,10 @@ export const createRoom = async (req, res) => {
         }
         try {
             await Room.create({
-                    id_user: id_user,
                     id_kost: id_kost,
-                    status: status,
+                    num_room: num_room,
                     price: price,
-                    description: description,
+                    description_room: description,
                     image: fileName,
                     url_image: url_image,
                 });
