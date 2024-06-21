@@ -1,4 +1,6 @@
 import Kost from "../models/Kost.js";
+import Room from "../models/Room.js";
+import user from "../models/User.js";
 import path from "path";
 import fs from "fs";
 
@@ -148,6 +150,25 @@ export const remove = async (req, res) => {
             },
         });
         res.json({ message: "Kost deleted successfully" });
+    } catch (err) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+export const getKostByRoom = async (req, res) => {
+    const id_user = res.locals.userId;
+    try {
+        const rooms = await Room.findOne({ where: { id_user: id_user } });
+        if (!rooms) {
+            return res.status(404).json({ message: 'Data tidak ditemukan' });
+        }
+        const kost = await Kost.findOne({ where: { id: rooms.id_kost } });
+        if (!kost) {
+            return res.status(404).json({ message: 'Data tidak ditemukan' });
+        }
+
+        res.json(kost);
+        
     } catch (err) {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
