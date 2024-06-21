@@ -33,6 +33,7 @@ const verifyToken = (req, res, next) => {
       } else {
         res.locals.userId = decoded.userId;
         res.locals.userRole = decoded.role;
+        res.locals.userName = decoded.name;
         return next();
       }
     });
