@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { findAll, findOne, create, update, remove, checkPermission, findByIdUser } from "../controllers/kost-controller.js";
+import { findAll, findOne, create, update, remove, checkPermission, findByIdUser, getKostByRoom } from "../controllers/kost-controller.js";
 import verifyToken from "../middlewares/authJwt.js";
 import {statusAccess, Pemilik} from "../middlewares/accountChecker.js";
 const kostRoute = Router();
@@ -11,5 +11,6 @@ kostRoute.get("/owner", findByIdUser);
 kostRoute.post("/", Pemilik, create);
 kostRoute.put("/:id", checkPermission, Pemilik, update);
 kostRoute.delete("/:id",checkPermission, Pemilik, remove);
+kostRoute.get("/mykost", getKostByRoom);
 
 export default kostRoute;
