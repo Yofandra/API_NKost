@@ -6,7 +6,7 @@ const ratingRoute = Router()
 
 ratingRoute.use(verifyToken, statusAccess)
 ratingRoute.get("/", findAll)
-ratingRoute.get("/:id", findByIdKost)
+ratingRoute.get("/kost/:id", findByIdKost)
 ratingRoute.get("/user", findByIdUser)
 ratingRoute.post("/", Penyewa, create)
 ratingRoute.put("/user", Penyewa, update)
