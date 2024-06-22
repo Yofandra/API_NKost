@@ -69,6 +69,11 @@ export const updateReport = async (req, res) => {
     const {description} = req.body;
 
     try {
+        const report = await Report.findByPk(req.params.id);
+        if (!report) {
+            return res.status(404).json({ message: 'report tidak ditemukan' });
+        }
+
         const room = await Room.findOne({ where: { id_user : id_user } });
         if (!room) {
             return res.status(404).json({ message: 'id room tidak ditemukan' });
@@ -76,6 +81,7 @@ export const updateReport = async (req, res) => {
 
         await Report.update({
             description_report: description,
+            report_date: new Date(),
         }, {
             where: {
                 id_user: id_user,
@@ -91,22 +97,34 @@ export const updateReport = async (req, res) => {
 }
 
 export const deleteReport = async (req, res) => {
-    const id_user = res.locals.userId;
     try {
-        const room = await Room.findOne({ where: { id_user : id_user } });
-        if (!room) {
-            return res.status(404).json({ message: 'id room tidak ditemukan' });
+        const report = await Report.findByPk(req.params.id);
+        if (!report) {
+            return res.status(404).json({ message: 'report tidak ditemukan' });
         }
 
         await Report.destroy({
             where: {
-                id_user: id_user,
-                id_room: room.id,
+                id : req.params.id,
             },
         });
         res.json({ message: "Report berhasil di hapus" });
     } catch (err) {
         console.error('Error:', err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+export const getReportByIdUser = async (req, res) => {
+    const id_user = res.locals.userId;
+    try {
+        const report = await Report.findAll({ where: { id_user : id_user } });
+        if (report.length === 0) {
+            return res.status(404).json({ message: 'Data tidak ditemukan' });
+        }
+        res.json(report);
+    }catch(err){
+        console.log(err);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
