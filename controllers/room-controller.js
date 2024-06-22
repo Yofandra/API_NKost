@@ -1,41 +1,55 @@
 import Room from '../models/Room.js';
 import path from "path";
 import fs from "fs";
+import dotenv from 'dotenv'
+import {v2 as cloudinary} from "cloudinary";
 
-export const createRoom = async (req, res) => {     
+dotenv.config();
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export const createRoom = async (req, res) => {
     const { id_kost, num_room, price, description } = req.body;
-    const file =  req.files.file;
-    const ext = path.extname(file.name); 
-    const fileName = file.md5 + ext;  
-    const url_image = `${req.protocol}://${req.get("host")}/images/${fileName}`;
-    const allowedTypes = [".jpg", ".jpeg", ".png", "webp"];
 
     if (!req.files || !req.files.file) {
         return res.status(400).json({ message: 'No file uploaded' });
     }
-    
-    if (!allowedTypes.includes(ext.toLowerCase())) {
-        return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
+
+    const file = req.files.file;
+    const ext = path.extname(file.name).toLowerCase();
+    const allowedTypes = [".jpg", ".jpeg", ".png", "webp"];
+
+    if (!allowedTypes.includes(ext)) {
+        return res.status(422).json({ message: 'Invalid file format' });
     }
 
-    file.mv(`./public/images/${fileName}`, async (err) => {
-        if (err) {
-            return res.status(500).json({ message: 'Internal Server Error' });
-        }
-        try {
-            await Room.create({
-                    id_kost: id_kost,
-                    num_room: num_room,
-                    price: price,
-                    description_room: description,
-                    image: fileName,
-                    url_image: url_image,
-                });
-            res.json({ message: "Kost created successfully" });
-        } catch (err) {
-            return res.status(500).json({ message: 'Internal Server Error' });
-        }
-    });
+    try {
+        // Unggah gambar ke Cloudinary
+        const result = await cloudinary.uploader.upload(file.tempFilePath, {
+            folder: 'room_images',
+        });
+
+        const fileName = result.secure_url;
+        const image_public_id = result.public_id;
+
+        await Room.create({
+            id_kost: id_kost,
+            num_room: num_room,
+            price: price,
+            description_room: description,
+            image: fileName,
+            image_public_id: image_public_id,
+        });
+
+        res.json({ message: "Room created successfully" });
+    } catch (err) {
+        console.error("Error during room creation:", err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
 }
 
 export const deleteRoom = async (req, res) => {
@@ -65,47 +79,56 @@ export const deleteRoom = async (req, res) => {
 }
 
 export const updateRoom = async (req, res) => {
-    const room = await Room.findByPk(req.params.id);
-    let fileName = "";
-    if(req.files === null){
-        fileName = Room.image;
-    }else{
-        const file = req.files.file;
-        const ext = path.extname(file.name);
-        fileName = file.md5 + ext;
-        const allowedTypes = [".jpg", ".jpeg", ".png"];
-
-        if (!allowedTypes.includes(ext.toLowerCase())) {
-            return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
+    try {
+        const room = await Room.findByPk(req.params.id);
+        if (!room) {
+            return res.status(404).json({ message: 'Room not found' });
         }
 
-        const filepath = `./public/images/${room.image}`;
-        fs.unlinkSync(filepath);
+        let fileName = room.image;
+        let image_public_id = room.image_public_id;
 
-        file.mv(`./public/images/${fileName}`, (err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Internal Server Error' });
+        if (req.files && req.files.file) {
+            const file = req.files.file;
+            const ext = path.extname(file.name).toLowerCase();
+            const allowedTypes = [".jpg", ".jpeg", ".png"];
+
+            if (!allowedTypes.includes(ext)) {
+                return res.status(422).json({ message: 'Invalid file format' });
             }
-        });
-    }
-    const status = req.body.status;
-    const price = req.body.price;
-    const description = req.body.description;
-    const url_image = `${req.protocol}://${req.get("host")}/images/${fileName}`;
-    try {
+
+            // Hapus gambar lama dari Cloudinary jika ada
+            if (image_public_id) {
+                await cloudinary.uploader.destroy(image_public_id);
+            }
+
+            // Unggah gambar baru ke Cloudinary
+            const result = await cloudinary.uploader.upload(file.tempFilePath, {
+                folder: 'room_images',
+            });
+
+            fileName = result.secure_url;
+            image_public_id = result.public_id;
+        }
+
+        const status = req.body.status;
+        const price = req.body.price;
+        const description = req.body.description;
+
         await room.update({
             status: status,
             price: price,
             description: description,
             image: fileName,
-            url_image: url_image,
+            image_public_id: image_public_id,
         });
-        res.json({ message: "Kost updated successfully" });
+
+        res.json({ message: "Room updated successfully" });
     } catch (err) {
+        console.error("Error during room update:", err);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
-}
-
+};
 export const getRoom = async (req, res) => {
     try {
         const room = await Room.findAll();

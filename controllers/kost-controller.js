@@ -3,6 +3,16 @@ import Room from "../models/Room.js";
 import user from "../models/User.js";
 import path from "path";
 import fs from "fs";
+import dotenv from 'dotenv'
+import {v2 as cloudinary} from "cloudinary";
+
+dotenv.config();
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export const findAll = async (req, res) => {
     try {
@@ -43,39 +53,46 @@ export const findByIdUser = async (req, res) => {
     }
 }
 
+
 export const create = async (req, res) => {
     const id_user = res.locals.userId;
     const name_kost = req.body.name_kost;
     const description_kost = req.body.description_kost;
-    const file =  req.files.file;
-    const ext = path.extname(file.name);
-    const fileName = file.md5 + ext;
-    const url_image = `${req.protocol}://${req.get("host")}/images/${fileName}`;
-    const allowedTypes = [".jpg", ".jpeg", ".png"];
 
     if (!req.files || !req.files.file) {
         return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    if (!allowedTypes.includes(ext.toLowerCase())) {
+    const file = req.files.file;
+    const ext = path.extname(file.name).toLowerCase();
+    const allowedTypes = [".jpg", ".jpeg", ".png"];
+
+    if (!allowedTypes.includes(ext)) {
         return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
     }
 
-    file.mv(`./public/images/${fileName}`, async (err) => {
-        if (err) {
-            return res.status(500).json({ message: 'Internal Server Error' });
-        }
-        try {
-            await Kost.create({id_user: id_user,
-                    name_kost: name_kost,
-                    description_kost: description_kost,
-                    image: fileName,
-                    url_image: url_image,});
-            res.json({ message: "Kost created successfully" });
-        } catch (err) {
-            return res.status(500).json({ message: 'Internal Server Error' });
-        }
-    });
+    try {
+        // Unggah gambar ke Cloudinary
+        const result = await cloudinary.uploader.upload(file.tempFilePath, {
+            folder: 'kost_images',
+        });
+
+        const fileName = result.secure_url;
+        const image_public_id = result.public_id;
+
+        await Kost.create({
+            id_user: id_user,
+            name_kost: name_kost,
+            description_kost: description_kost,
+            image: fileName,
+            image_public_id: image_public_id,
+        });
+
+        res.json({ message: "Kost created successfully" });
+    } catch (err) {
+        console.error("Error during kost creation:", err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
 }
 
 export const checkPermission = async (req, res, next) => {
@@ -95,47 +112,54 @@ export const checkPermission = async (req, res, next) => {
 };
 
 export const update = async (req, res) => {
-    const kost = await Kost.findByPk(req.params.id);
-    if (!kost) {
-        return res.status(404).json({ message: 'Data tidak ditemukan' });
-    }
-    let fileName = "";
-    if(req.files === null){
-        fileName = Kost.image;
-    }else{
-        const file = req.files.file;
-        const ext = path.extname(file.name);
-        fileName = file.md5 + ext;
-        const allowedTypes = [".jpg", ".jpeg", ".png"];
-
-        if (!allowedTypes.includes(ext.toLowerCase())) {
-            return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
+    try {
+        const kost = await Kost.findByPk(req.params.id);
+        if (!kost) {
+            return res.status(404).json({ message: 'Data tidak ditemukan' });
         }
 
-        const filepath = `./public/images/${kost.image}`;
-        fs.unlinkSync(filepath);
+        let fileName = kost.image; // Default to current image if no new file is uploaded
 
-        file.mv(`./public/images/${fileName}`, (err) => {
-            if (err) {
-                return res.status(500).json({ message: 'Internal Server Error' });
+        if (req.files && req.files.file) {
+            const file = req.files.file;
+            const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+            if (!allowedTypes.includes(file.mimetype)) {
+                return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
             }
-        });
-    }
-    const name_kost = req.body.name_kost;
-    const description_kost = req.body.description_kost;
-    const url_image = `${req.protocol}://${req.get("host")}/images/${fileName}`;
-    try {
-        await kost.update({
-            name_kost: name_kost,
-            description_kost: description_kost,
-            image: fileName,
-            url_image: url_image,
-        });
+
+            // Hapus gambar lama dari Cloudinary jika ada
+            if (kost.image_public_id) {
+                await cloudinary.uploader.destroy(kost.image_public_id);
+            }
+
+            // Unggah gambar baru ke Cloudinary
+            const result = await cloudinary.uploader.upload(file.tempFilePath, {
+                folder: 'kost_images',
+            });
+
+            fileName = result.secure_url;
+            const image_public_id = result.public_id;
+
+            await kost.update({
+                name_kost: req.body.name_kost,
+                description_kost: req.body.description_kost,
+                image: fileName,
+                image_public_id: image_public_id,
+            });
+        } else {
+            await kost.update({
+                name_kost: req.body.name_kost,
+                description_kost: req.body.description_kost,
+            });
+        }
+
         res.json({ message: "Kost updated successfully" });
     } catch (err) {
-        return res.status(500).json({ message: 'Internal Server Error' });
+        console.error("Error during kost update:", err);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-}
+};
 
 export const remove = async (req, res) => {
     const kost = await Kost.findByPk(req.params.id);
