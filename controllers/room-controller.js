@@ -149,3 +149,45 @@ export const getRoom = async (req, res) => {
         });
     }
 }
+
+export const getRoomByIdUser = async (req, res) => {
+    try {
+        const room = await Room.findAll({ where: { id_user: res.locals.userId } });
+        if (room.length === 0) {
+            return res.status(404).json({
+                message: "Room tidak ditemukan"
+            });
+        }
+        res.status(200).json({
+            status: "Success",
+            message: "Berhasil mendapatkan data",
+            data: room
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Server Error",
+        });
+    }
+}
+
+export const getRoomByIdKost = async (req, res) => {
+    try {
+        const room = await Room.findAll({ where: { id_kost: req.params.id } });
+        if (room.length === 0) {
+            return res.status(404).json({
+                message: "Room tidak ditemukan"
+            });
+        }
+        res.status(200).json({
+            status: "Success",
+            message: "Berhasil mendapatkan data",
+            data: room
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Server Error",
+        });
+    }
+}
