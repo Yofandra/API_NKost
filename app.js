@@ -3,7 +3,7 @@ const app = express();
 import dotenv from "dotenv";
 import loggingMiddleware from "./middlewares/loggingMiddleware.js";
 import sequelize from "./models/connection.js";
-import FileUpload from "express-fileupload";
+import fileUpload from "express-fileupload";
 import cors from "cors";
 import profileRoute from "./routes/profile-route.js";
 import userRoute from "./routes/user-route.js"
@@ -20,7 +20,10 @@ const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(FileUpload());
+app.use(fileUpload({
+  useTempFiles: true,
+  tempFileDir: '/tmp/'
+}));
 app.use(express.static("public"));
 app.use(cors());
 

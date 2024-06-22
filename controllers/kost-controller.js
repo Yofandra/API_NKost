@@ -85,7 +85,7 @@ export const create = async (req, res) => {
             name_kost: name_kost,
             description_kost: description_kost,
             image: fileName,
-            image_public_id: image_public_id,
+            url_image: image_public_id,
         });
 
         res.json({ message: "Kost created successfully" });
@@ -128,12 +128,10 @@ export const update = async (req, res) => {
                 return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
             }
 
-            // Hapus gambar lama dari Cloudinary jika ada
             if (kost.image_public_id) {
                 await cloudinary.uploader.destroy(kost.image_public_id);
             }
 
-            // Unggah gambar baru ke Cloudinary
             const result = await cloudinary.uploader.upload(file.tempFilePath, {
                 folder: 'kost_images',
             });

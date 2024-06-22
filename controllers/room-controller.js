@@ -42,7 +42,7 @@ export const createRoom = async (req, res) => {
             price: price,
             description_room: description,
             image: fileName,
-            image_public_id: image_public_id,
+            url_image: image_public_id,
         });
 
         res.json({ message: "Room created successfully" });
@@ -120,7 +120,7 @@ export const updateRoom = async (req, res) => {
             price: price,
             description: description,
             image: fileName,
-            image_public_id: image_public_id,
+            url_image: image_public_id,
         });
 
         res.json({ message: "Room updated successfully" });
