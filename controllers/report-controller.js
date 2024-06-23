@@ -129,3 +129,33 @@ export const getReportByIdUser = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+export const getReportByIdRoom = async (req, res) => {
+    const id_user = res.locals.userId;
+    try {
+        const kost = await Kost.findAll({ where: { id_user: id_user } });
+        if (!kost) {
+            return res.status(404).json({ message: 'kost id tidak ditemukan' });
+        }
+
+        const kostIds = kost.map(kost => kost.id);
+        const room = await Room.findAll({ where: { id_kost : kostIds } });
+        if (!room) {
+            return res.status(404).json({ message: 'room id tidak ditemukan' });
+        }
+
+        const roomIds = room.map(room => room.id);
+        const report = await Report.findAll({ where: { id_room : roomIds } });
+        if (report.length === 0) {
+            return res.status(404).json({ message: 'Data tidak ditemukan' });
+        }
+        res.json(report);
+    }
+    catch(err){
+        console.log(err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+
+}
+
