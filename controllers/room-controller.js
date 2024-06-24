@@ -155,8 +155,8 @@ export const getRoomByIdUser = async (req, res) => {
         const room = await Room.findAll({ 
             where: { id_user: res.locals.userId } });
         if (room.length === 0) {
-            return res.status(404).json({
-                message: "Room tidak ditemukan"
+            return res.status(200).json({
+                message: "Belum menyewa kamar"
             });
         }
         res.status(200).json({
