@@ -179,8 +179,8 @@ export const getRoomByIdKost = async (req, res) => {
             order: [['num_room', 'ASC']]
         });
         if (rooms.length === 0) {
-            return res.status(404).json({
-                message: "Room tidak ditemukan"
+            return res.status(200).json({
+                message: "Belum ada kamar yang tersedia"
             });
         }
         res.status(200).json(rooms);
