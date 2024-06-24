@@ -1,7 +1,7 @@
-import Report from "../models/Report.js";
+import Report from '../models/Report.js'
+import Room from '../models/Room.js'
+import Kost from '../models/Kost.js'
 import User from "../models/User.js";
-import Room from "../models/Room.js";
-import Kost from "../models/Kost.js";
 import { sendEmail } from "../middlewares/emailService.js";
 
 export const createReport = async (req, res) => {
@@ -132,34 +132,51 @@ export const getReportByIdUser = async (req, res) => {
 
 
 export const getReportByIdRoom = async (req, res) => {
-    const id_user = res.locals.userId;
-    try {
-        const reports = await Report.findAll({
-            include: {
-                model: Room,
-                attributes: ['num_room'],
-                include: {
-                    model: Kost,
-                    attributes: ['name_kost'],
-                    where: { id_user: id_user }
-                }
-            }
-        });
+  const id_user = res.locals.userId;
 
-        if (!reports || reports.length === 0) {
-            return res.status(404).json({ message: 'Data tidak ditemukan' });
-        }
+  try {
+    const kosts = await Kost.findAll({ where: { id_user: id_user } });
 
-        const result = reports.map(report => ({
-            name_kost: report.Room.Kost.name_kost,
-            num_room: report.Room.num_room,
-            ...report.dataValues
-        }));
-
-        res.json(result);
-    } catch(err) {
-        console.log(err);
-        return res.status(500).json({ message: 'Internal Server Error' });
+    if (!kosts || kosts.length === 0) {
+      return res.status(404).json({ message: 'Tidak ada data Kost yang ditemukan untuk user ini' });
     }
-}
+
+    const kostIds = kosts.map(kost => kost.id);
+
+    const rooms = await Room.findAll({ where: { id_kost: kostIds } });
+
+    if (!rooms || rooms.length === 0) {
+      return res.status(404).json({ message: 'Tidak ada data Room yang ditemukan untuk Kost yang terkait dengan user ini' });
+    }
+
+    const roomIds = rooms.map(room => room.id);
+
+    const reports = await Report.findAll({ where: { id_room: roomIds } });
+
+    if (!reports || reports.length === 0) {
+      return res.status(404).json({ message: 'Tidak ada data Report yang ditemukan untuk user ini' });
+    }
+
+    const formattedReports = reports.map(report => {
+      const kost = kosts.find(kost => kost.id === rooms.find(room => room.id === report.id_room).id_kost);
+
+      const room = rooms.find(room => room.id === report.id_room);
+
+      return {
+        id: report.id,
+        id_user: report.id_user,
+        id_room: report.id_room,
+        description_report: report.description_report,
+        report_date: report.report_date,
+        name_kost: kost.name_kost,
+        num_room: room.num_room
+      };
+    });
+
+    res.json(formattedReports);
+  } catch (err) {
+    console.error('Error:', err);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
 
