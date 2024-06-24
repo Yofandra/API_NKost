@@ -1,6 +1,7 @@
 import Kost from "../models/Kost.js";
 import Room from "../models/Room.js";
 import user from "../models/User.js";
+import Location from "../models/Location.js";
 import path from "path";
 import fs from "fs";
 import dotenv from 'dotenv'
@@ -30,11 +31,34 @@ export const findAll = async (req, res) => {
 export const findOne = async (req, res) => {
     try {
         const kost = await Kost.findByPk(req.params.id);
-        if (kost) {
-            res.json(kost);
-        } else {
+        
+        if (!kost) {
             return res.status(404).json({ message: 'Data tidak ditemukan' });
         }
+
+        const location = await Location.findOne({ where: { id_kost: kost.id } });
+        if (!location) {
+            return res.status(404).json({ message: 'Data tidak ditemukan' });
+        }
+
+        const adress = `${location.detail}, ${location.village}, ${location.subdistrict}, ${location.regency}`
+
+        const formattedReports = {
+            id: kost.id,
+            id_user: kost.id_user,
+            name_kost: kost.name_kost,
+            description_kost: kost.description_kost,
+            image: kost.image,
+            url_image: kost.url_image,
+            fullAddress: adress,
+            location: location.point_gmap,
+        };
+        // if (kost) {
+        //     res.json(kost);
+        // } else {
+        //     return res.status(404).json({ message: 'Data tidak ditemukan' });
+        // }
+        res.json(formattedReports);
     } catch (err) {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
@@ -72,7 +96,6 @@ export const create = async (req, res) => {
     }
 
     try {
-        // Unggah gambar ke Cloudinary
         const result = await cloudinary.uploader.upload(file.tempFilePath, {
             folder: 'kost_images',
         });
