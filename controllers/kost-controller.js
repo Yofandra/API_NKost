@@ -31,19 +31,22 @@ export const findAll = async (req, res) => {
 export const findOne = async (req, res) => {
     try {
         const kost = await Kost.findByPk(req.params.id);
-        
+
         if (!kost) {
             return res.status(404).json({ message: 'Data tidak ditemukan' });
         }
 
+        let adress = "Alamat belum di isi";
+        let gmaps = "Link google maps belum di isi";
+
         const location = await Location.findOne({ where: { id_kost: kost.id } });
-        if (!location) {
-            return res.status(404).json({ message: 'Data tidak ditemukan' });
+        
+        if (location) {
+            adress = `${location.detail}, ${location.village}, ${location.subdistrict}, ${location.regency}`;
+            gmaps = location.point_gmap;
         }
 
-        const adress = `${location.detail}, ${location.village}, ${location.subdistrict}, ${location.regency}`
-
-        const formattedReports = {
+        const formattedResponse = {
             id: kost.id,
             id_user: kost.id_user,
             name_kost: kost.name_kost,
@@ -51,16 +54,12 @@ export const findOne = async (req, res) => {
             image: kost.image,
             url_image: kost.url_image,
             fullAddress: adress,
-            location: location.point_gmap,
+            location: gmaps
         };
-        // if (kost) {
-        //     res.json(kost);
-        // } else {
-        //     return res.status(404).json({ message: 'Data tidak ditemukan' });
-        // }
-        res.json(formattedReports);
+
+        res.json(formattedResponse);
     } catch (err) {
-        return res.status(500).json({ message: 'Internal Server Error' });
+        return res.status(500).json({ message: 'Internal Server Error', err });
     }
 }
 
