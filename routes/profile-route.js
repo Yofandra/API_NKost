@@ -5,7 +5,7 @@ import {statusAccess, checkPermission, adminPermission} from "../middlewares/acc
 const profileRoute = Router();
 
 profileRoute.get("/", findAll);
-profileRoute.get("/:id", getUserById);
+profileRoute.get("/", getUserById);
 profileRoute.put('/update', verifyToken, statusAccess, checkPermission, updateUser);
 profileRoute.put('/update/:id', verifyToken, statusAccess, adminPermission, updateUserById);
 profileRoute.delete("/:id", verifyToken, statusAccess, checkPermission, deleteUser);
