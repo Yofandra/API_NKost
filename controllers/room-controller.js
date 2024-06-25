@@ -194,7 +194,7 @@ export const getRoomByIdKost = async (req, res) => {
                 id_kost: room.id_kost,
                 num_room: room.num_room,
                 price: room.price,
-                description: room.description,
+                description: room.description_room,
                 image: room.image,
                 status: room.status,
                 nama_penyewa: penyewa
@@ -218,11 +218,25 @@ export const getRoomById = async (req, res) => {
                 message: "Room tidak ditemukan"
             });
         }
-        res.status(200).json({
-            status: "Success",
-            message: "Berhasil mendapatkan data",
-            data: room
-        });
+
+        let penyewa = "belum ada penyewa";
+            const user = await User.findByPk(room.id_user);
+            if (user) {
+                penyewa = user.name;
+            }
+
+        const formattedRooms =  {
+                id: room.id,
+                id_kost: room.id_kost,
+                num_room: room.num_room,
+                price: room.price,
+                description: room.description_room,
+                image: room.image,
+                status: room.status,
+                nama_penyewa: penyewa
+            };
+            
+        res.json(formattedRooms);
     } catch (error) {
         console.log(error);
         res.status(500).json({
