@@ -121,7 +121,7 @@ export const getReportByIdUser = async (req, res) => {
   try {
     const report = await Report.findAll({ where: { id_user: id_user } });
     if (report.length === 0) {
-      return res.status(404).json({ message: "Data tidak ditemukan" });
+      return res.status(200).json({ message: "Belum ada laporan yang dibuat" });
     }
     res.json(report);
   } catch (err) {

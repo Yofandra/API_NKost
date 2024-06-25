@@ -204,7 +204,7 @@ export const getKostByRoom = async (req, res) => {
     try {
         const rooms = await Room.findOne({ where: { id_user: id_user } });
         if (!rooms) {
-            return res.status(404).json({ message: 'Data tidak ditemukan' });
+            return res.status(200).json({ message: 'User belum menyewa kamar' });
         }
         const kost = await Kost.findOne({ where: { id: rooms.id_kost } });
         if (!kost) {

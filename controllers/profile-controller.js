@@ -24,7 +24,7 @@ export const getUserById = async (req, res) => {
     const id = req.params.id;
     try {  
       const user = await User.findByPk(id, {
-        attributes: ['name', 'email'], 
+        attributes: ['name', 'email', 'last_login', 'role', 'status'], 
       });
   
       if (!user) {
