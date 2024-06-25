@@ -20,7 +20,7 @@ export const findByIdUser = async (req, res) => {
         if(rating){
             res.json(rating)
         }else{
-            return res.status(404).json({msg : 'Data tidak ditemukan'})
+            return res.status(200).json({msg : 'Belum memberi penilaian'})
         }
     } catch (error) {
         return res.status(500).json({msg: 'Internal Server Error'})
