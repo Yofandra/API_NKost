@@ -1,4 +1,5 @@
 import Room from '../models/Room.js';
+import User from '../models/User.js';
 import path from "path";
 import fs from "fs";
 import dotenv from 'dotenv'
@@ -174,16 +175,33 @@ export const getRoomByIdUser = async (req, res) => {
 
 export const getRoomByIdKost = async (req, res) => {
     try {
-        const rooms = await Room.findAll({ 
-            where: { id_kost: req.params.id },
-            order: [['num_room', 'ASC']]
-        });
+        const rooms = await Room.findAll({ where: { id_kost: req.params.id }, order: [['num_room', 'ASC']] });
         if (rooms.length === 0) {
             return res.status(200).json({
                 message: "Belum ada kamar yang tersedia"
             });
         }
-        res.status(200).json(rooms);
+
+        const formattedRooms = await Promise.all(rooms.map(async (room) => {
+            let penyewa = "belum ada penyewa";
+            const user = await User.findByPk(room.id_user);
+            if (user) {
+                penyewa = user.name;
+            }
+
+            return {
+                id: room.id,
+                id_kost: room.id_kost,
+                num_room: room.num_room,
+                price: room.price,
+                description: room.description,
+                image: room.image,
+                status: room.status,
+                nama_penyewa: penyewa
+            };
+        }));
+
+        res.json(formattedRooms);
     } catch (error) {
         console.log(error);
         res.status(500).json({
