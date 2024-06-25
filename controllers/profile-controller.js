@@ -21,10 +21,10 @@ export const findAll = async (req, res) => {
 }
 
 export const getUserById = async (req, res) => {
-    const id = req.params.id;
+    const id = res.locals.userId;
     try {  
       const user = await User.findByPk(id, {
-        attributes: ['name', 'email', 'last_login', 'role', 'status'], 
+        attributes: ['name', 'email', 'password', 'last_login', 'role', 'status'], 
       });
   
       if (!user) {
