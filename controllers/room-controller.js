@@ -15,41 +15,47 @@ cloudinary.config({
 });
 
 export const createRoom = async (req, res) => {
-    id_user = res.locals.userId;
-    const kost = await Kost.findOne({ where: { id_user: id_user } });
-    const { num_room, price, description } = req.body;
-
+    const id_user = res.locals.userId;
+    
     try {
+        const kost = await Kost.findOne({ where: { id_user: id_user } });
+        if (!kost) {
+            return res.status(404).json({ message: 'Kost not found' });
+        }
+
+        const { num_room, price, description_room } = req.body;
+
+        console.log("req.files:", req.files);
+
         if (!req.files || !req.files.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        if (req.files && req.files.file) {
-            const file = req.files.file;
-            const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+        const file = req.files.file;
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
         
-        
+
         if (!allowedTypes.includes(file.mimetype)) {
             return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
         }
-    
+
             const result = await cloudinary.uploader.upload(file.tempFilePath, {
                 folder: 'room_images',
             });
-        
+
             const fileName = result.secure_url;
             const image_public_id = result.public_id;
         
-        
+
             await Room.create({
                 id_kost: kost.id,
                 num_room: num_room,
                 price: price,
-                description_room: description,
+                description_room: description_room,
                 image: fileName,
                 url_image: image_public_id,
             });
-        }
+
             res.json({ message: "Room created successfully" });
     } catch (err) {
         console.error("Error during room creation:", err);
