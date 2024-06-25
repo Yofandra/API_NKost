@@ -168,7 +168,7 @@ export const forgetPassword = async (req, res) => {
         user.resetPasswordExpires = tokenExpiry;
         await user.save();
 
-        const resetURL = `http://localhost:3000/user/reset-password?token=${token}`;
+        const resetURL = `https://api-n-kost.vercel.app/user/reset-password?token=${token}`;
         const emailContent =  `Hai ${user.name},\n\n` +
           `Kami menerima permintaan untuk mereset password akun Anda.\n\n` +
           `Untuk melanjutkan proses reset password, silakan klik tautan di bawah ini atau salin dan tempel ke browser Anda:\n\n` +
