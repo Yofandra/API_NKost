@@ -23,7 +23,7 @@ export const findAll = async (req, res) => {
 export const getUserById = async (req, res) => {
     const id = res.locals.userId;
     try {  
-      const user = await User.findByPk(id, {
+      const user = await User.findOne(id, {
         attributes: ['name', 'email', 'password', 'last_login', 'role', 'status'], 
       });
   
