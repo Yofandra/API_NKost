@@ -209,3 +209,24 @@ export const getRoomByIdKost = async (req, res) => {
         });
     }
 }
+
+export const getRoomById = async (req, res) => {
+    try {
+        const room = await Room.findByPk(req.params.id);
+        if (!room) {
+            return res.status(404).json({
+                message: "Room tidak ditemukan"
+            });
+        }
+        res.status(200).json({
+            status: "Success",
+            message: "Berhasil mendapatkan data",
+            data: room
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Server Error",
+        });
+    }
+}
