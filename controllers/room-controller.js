@@ -15,39 +15,42 @@ cloudinary.config({
 });
 
 export const createRoom = async (req, res) => {
-    const { id_kost, num_room, price, description } = req.body;
-
-    if (!req.files || !req.files.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
-    }
-
-    const file = req.files.file;
-    const ext = path.extname(file.name).toLowerCase();
-    const allowedTypes = [".jpg", ".jpeg", ".png", "webp"];
-
-    if (!allowedTypes.includes(ext)) {
-        return res.status(422).json({ message: 'Invalid file format' });
-    }
+    id_user = res.locals.userId;
+    const kost = await Kost.findOne({ where: { id_user: id_user } });
+    const { num_room, price, description } = req.body;
 
     try {
-        // Unggah gambar ke Cloudinary
-        const result = await cloudinary.uploader.upload(file.tempFilePath, {
-            folder: 'room_images',
-        });
+        if (!req.files || !req.files.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
 
-        const fileName = result.secure_url;
-        const image_public_id = result.public_id;
-
-        await Room.create({
-            id_kost: id_kost,
-            num_room: num_room,
-            price: price,
-            description_room: description,
-            image: fileName,
-            url_image: image_public_id,
-        });
-
-        res.json({ message: "Room created successfully" });
+        if (req.files && req.files.file) {
+            const file = req.files.file;
+            const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+        
+        
+        if (!allowedTypes.includes(file.mimetype)) {
+            return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
+        }
+    
+            const result = await cloudinary.uploader.upload(file.tempFilePath, {
+                folder: 'room_images',
+            });
+        
+            const fileName = result.secure_url;
+            const image_public_id = result.public_id;
+        
+        
+            await Room.create({
+                id_kost: kost.id,
+                num_room: num_room,
+                price: price,
+                description_room: description,
+                image: fileName,
+                url_image: image_public_id,
+            });
+        }
+            res.json({ message: "Room created successfully" });
     } catch (err) {
         console.error("Error during room creation:", err);
         return res.status(500).json({ message: 'Internal Server Error' });
