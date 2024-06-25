@@ -25,7 +25,13 @@ app.use(fileUpload({
   tempFileDir: '/tmp/'
 }));
 app.use(express.static("public"));
-app.use(cors());
+app.use(cors(
+  {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }
+));
 
 app.use(loggingMiddleware);
 app.get("/", (req, res) => res.json({ msg: "Hello World" }));
