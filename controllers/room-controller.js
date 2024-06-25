@@ -153,10 +153,11 @@ export const getRoom = async (req, res) => {
 
 export const getRoomByIdUser = async (req, res) => {
     try {
-        const room = await Room.findAll({ where: { id_user: res.locals.userId } });
+        const room = await Room.findAll({ 
+            where: { id_user: res.locals.userId } });
         if (room.length === 0) {
-            return res.status(404).json({
-                message: "Room tidak ditemukan"
+            return res.status(200).json({
+                message: "Belum menyewa kamar"
             });
         }
         res.status(200).json({
@@ -174,10 +175,10 @@ export const getRoomByIdUser = async (req, res) => {
 
 export const getRoomByIdKost = async (req, res) => {
     try {
-        const rooms = await Room.findAll({ where: { id_kost: req.params.id } });
+        const rooms = await Room.findAll({ where: { id_kost: req.params.id }, order: [['num_room', 'ASC']] });
         if (rooms.length === 0) {
-            return res.status(404).json({
-                message: "Room tidak ditemukan"
+            return res.status(200).json({
+                message: "Belum ada kamar yang tersedia"
             });
         }
 
@@ -201,7 +202,6 @@ export const getRoomByIdKost = async (req, res) => {
         }));
 
         res.json(formattedRooms);
-
     } catch (error) {
         console.log(error);
         res.status(500).json({
