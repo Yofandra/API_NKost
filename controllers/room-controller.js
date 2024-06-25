@@ -98,12 +98,10 @@ export const updateRoom = async (req, res) => {
                 return res.status(422).json({ message: 'Invalid file format' });
             }
 
-            // Hapus gambar lama dari Cloudinary jika ada
             if (image_public_id) {
                 await cloudinary.uploader.destroy(image_public_id);
             }
 
-            // Unggah gambar baru ke Cloudinary
             const result = await cloudinary.uploader.upload(file.tempFilePath, {
                 folder: 'room_images',
             });
@@ -112,6 +110,7 @@ export const updateRoom = async (req, res) => {
             image_public_id = result.public_id;
         }
 
+        const num_room = req.body.num_room;
         const status = req.body.status;
         const price = req.body.price;
         const description = req.body.description;
@@ -122,6 +121,7 @@ export const updateRoom = async (req, res) => {
             description: description,
             image: fileName,
             url_image: image_public_id,
+            num_room: num_room,
         });
 
         res.json({ message: "Room updated successfully" });
@@ -235,7 +235,7 @@ export const getRoomById = async (req, res) => {
                 status: room.status,
                 nama_penyewa: penyewa
             };
-            
+
         res.json(formattedRooms);
     } catch (error) {
         console.log(error);
