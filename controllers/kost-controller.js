@@ -140,7 +140,7 @@ export const update = async (req, res) => {
             return res.status(404).json({ message: 'Data tidak ditemukan' });
         }
 
-        let fileName = kost.image; // Default to current image if no new file is uploaded
+        let fileName = kost.image; 
 
         if (req.files && req.files.file) {
             const file = req.files.file;

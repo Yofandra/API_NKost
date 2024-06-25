@@ -91,15 +91,14 @@ export const updateRoom = async (req, res) => {
 
         if (req.files && req.files.file) {
             const file = req.files.file;
-            const ext = path.extname(file.name).toLowerCase();
-            const allowedTypes = [".jpg", ".jpeg", ".png"];
+            const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
 
-            if (!allowedTypes.includes(ext)) {
-                return res.status(422).json({ message: 'Invalid file format' });
+            if (!allowedTypes.includes(file.mimetype)) {
+                return res.status(422).json({ message: 'Format file yang anda masukkan salah' });
             }
 
-            if (image_public_id) {
-                await cloudinary.uploader.destroy(image_public_id);
+            if (room.image_public_id) {
+                await cloudinary.uploader.destroy(room.image_public_id);
             }
 
             const result = await cloudinary.uploader.upload(file.tempFilePath, {
@@ -110,26 +109,22 @@ export const updateRoom = async (req, res) => {
             image_public_id = result.public_id;
         }
 
-        const num_room = req.body.num_room;
-        const status = req.body.status;
-        const price = req.body.price;
-        const description = req.body.description;
-
         await room.update({
-            status: status,
-            price: price,
-            description: description,
+            status: req.body.status || room.status,
+            price: req.body.price || room.price,
+            description_room: req.body.description_room || room.description_room,
             image: fileName,
-            url_image: image_public_id,
-            num_room: num_room,
+            image_public_id: image_public_id,
+            num_room: req.body.num_room || room.num_room,
         });
 
-        res.json({ message: "Room updated successfully" });
+        res.json({ message: "Room updated successfully", data: room });
     } catch (err) {
         console.error("Error during room update:", err);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 export const getRoom = async (req, res) => {
     try {
         const room = await Room.findAll();
