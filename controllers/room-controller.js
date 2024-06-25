@@ -1,5 +1,6 @@
 import Room from '../models/Room.js';
 import User from '../models/User.js';
+import Kost from '../models/Kost.js';
 import path from "path";
 import fs from "fs";
 import dotenv from 'dotenv'
@@ -220,6 +221,14 @@ export const getRoomById = async (req, res) => {
                 penyewa = user.name;
             }
 
+        let namakost = "";
+            const kost = await Kost.findByPk(room.id_kost);
+            if (!kost) {
+                return res.status(404).json({
+                    message: "Kost tidak ditemukan"
+                });
+            }
+
         const formattedRooms =  {
                 id: room.id,
                 id_kost: room.id_kost,
@@ -228,7 +237,8 @@ export const getRoomById = async (req, res) => {
                 description: room.description_room,
                 image: room.image,
                 status: room.status,
-                nama_penyewa: penyewa
+                nama_penyewa: penyewa,
+                namakost: kost.name_kost
             };
 
         res.json(formattedRooms);
