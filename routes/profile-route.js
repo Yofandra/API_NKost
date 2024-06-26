@@ -6,8 +6,8 @@ const profileRoute = Router();
 
 profileRoute.get("/", findAll);
 profileRoute.get("/user", verifyToken, getUserById);
-profileRoute.put('/update', verifyToken, statusAccess, checkPermission, updateUser);
+profileRoute.put('/update', verifyToken, statusAccess, updateUser);
 profileRoute.put('/update/:id', verifyToken, statusAccess, adminPermission, updateUserById);
-profileRoute.delete("/:id", verifyToken, statusAccess, checkPermission, deleteUser);
+profileRoute.delete("/:id", verifyToken, statusAccess, deleteUser);
 
 export default profileRoute;
