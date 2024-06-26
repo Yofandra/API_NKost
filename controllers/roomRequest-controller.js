@@ -84,7 +84,7 @@ export const RoomRequestAccept = async (req, res) => {
 }
 
 
-export const RoomRequestReject = async (req, res) => {
+export const RoomRequestRejected = async (req, res) => {
     const { id } = req.params; 
     try {
         const roomRequest = await RoomRequest.findOne({
