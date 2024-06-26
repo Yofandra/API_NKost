@@ -21,56 +21,56 @@ export const createRoomRequest = async (req, res) => {
 }
 
 export const RoomRequestAccept = async (req, res) => {
-    const {id_user, id_room} = req.body
+    const { id } = req.params;
     try {
-        const user = await User.findOne({
-            where: { 
-                id: id_user 
-            } 
+        const roomRequest = await RoomRequest.findOne({
+            where: { id: id }
         });
 
-        const roomRequest = await RoomRequest.update({
-            status: "approved",
-        }, {
-            where: {
-                id_user: id_user,
-                id_room: id_room,
-            },
-        });
-        if (roomRequest[0] > 0) { 
-            const room = await Room.update({
-                id_user: id_user,
-                status: "booked",
-            }, {
-                where: {
-                    id: id_room,
-                },
-            });
-    
-            if (room[0] > 0) {
-                console.log("Update room berhasil");
-            } else {
-                console.log("Update room gagal");
-            }
-        } else {
-            console.log("Update RoomRequest gagal");
-        }
-                
         if (!roomRequest) {
             return res.status(404).json({
                 message: "Room request tidak ditemukan",
             });
         }
+
+        const user = await User.findOne({
+            where: { id: roomRequest.id_user }
+        });
+
+        await RoomRequest.update({
+            status: "approved",
+        }, {
+            where: {
+                id: id,
+            },
+        });
+
+        const room = await Room.update({
+            id_user: roomRequest.id_user,
+            status: "booked",
+        }, {
+            where: {
+                id: roomRequest.id_room,
+            },
+        });
+
+        if (room[0] === 0) {
+            return res.status(500).json({
+                message: "Update room gagal",
+            });
+        }
+
         const emailContent =  `Hai ${user.name},\n\n` +
           `Terima kasih telah menggunakan layanan NKost.\n\n` +
           `Kami dengan senang hati menginformasikan bahwa penyewaan kost Anda telah berhasil.\n\n` +
           `Jika Anda memiliki pertanyaan atau memerlukan bantuan lebih lanjut, jangan ragu untuk \n\n` +
-          `menghubungi kami.` +
+          `menghubungi kami.\n\n` +
           `Terima kasih,\n` +
           `Tim Kami \n` +
           `nKost`;
 
-    await sendEmail(user.email, 'Status Penyewaan', emailContent);
+        await sendEmail(user.email, 'Status Penyewaan', emailContent);
+        
         res.status(200).json({
             status: "Success",
             message: "Room request berhasil diterima",
@@ -83,43 +83,48 @@ export const RoomRequestAccept = async (req, res) => {
     }
 }
 
-export const RoomRequestRejected = async (req, res) => {
-    const {id_user, id_room} = req.body
+
+export const RoomRequestReject = async (req, res) => {
+    const { id } = req.params; 
     try {
-        const user = await User.findOne({
-            where: { 
-                id: id_user 
-            } 
+        const roomRequest = await RoomRequest.findOne({
+            where: { id: id }
         });
 
-        const roomRequest = await RoomRequest.update({
-            status: "rejected",
-        }, {
-            where: {
-                id_user: id_user,
-                id_room: id_room,
-            },
-        });
         if (!roomRequest) {
             return res.status(404).json({
                 message: "Room request tidak ditemukan",
             });
         }
+
+        const user = await User.findOne({
+            where: { id: roomRequest.id_user }
+        });
+
+        await RoomRequest.update({
+            status: "rejected",
+        }, {
+            where: {
+                id: id,
+            },
+        });
+
         const emailContent =  `Hai ${user.name},\n\n` +
           `Terima kasih telah menggunakan layanan NKost.\n\n` +
-          `Kami mohon maaf untuk menginformasikan bahwa permintaan penyewaan kost Anda di tolak\n\n` +
-          `saat ini.` +
+          `Kami mohon maaf untuk menginformasikan bahwa permintaan penyewaan kost Anda ditolak\n\n` +
+          `saat ini.\n\n` +
           `Jika Anda memiliki pertanyaan atau memerlukan bantuan lebih lanjut, jangan ragu untuk \n\n` +
-          `menghubungi kami.` +
+          `menghubungi kami.\n\n` +
           `Terima kasih,\n` +
           `Tim Kami \n` +
           `nKost`;
 
         await sendEmail(user.email, 'Status Penyewaan', emailContent);
-            res.status(200).json({
-                status: "Success",
-                message: "Room request berhasil diterima",
-            });
+        
+        res.status(200).json({
+            status: "Success",
+            message: "Room request berhasil ditolak",
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -127,6 +132,7 @@ export const RoomRequestRejected = async (req, res) => {
         });
     }
 }
+
 
 export const getRoomRequest = async (req, res) => {
     try {
