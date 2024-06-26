@@ -22,11 +22,9 @@ export const findAll = async (req, res) => {
 
 export const getUserById = async (req, res) => {
     const id = res.locals.userId;
+    console.log(id);
     try {  
-      const user = await User.findOne(id, {
-        attributes: ['name', 'email', 'password', 'last_login', 'role', 'status'], 
-      });
-  
+      const user = await User.findOne({ where: { id: res.locals.userId } })  
       if (!user) {
         return res.status(404).json({
           message: "User tidak ditemukan",
