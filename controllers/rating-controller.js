@@ -33,7 +33,7 @@ export const findByIdKost = async (req, res) => {
         const ratings = await Rating.findAll({ where: { id_kost: req.params.id } });
 
         if (ratings.length === 0) {
-            return res.status(404).json({ msg: 'Data tidak ditemukan' });
+            return res.status(200).json({ msg: 'Belum ada Penilaian' });
         }
 
         const userIds = ratings.map(rating => rating.id_user);
