@@ -186,15 +186,22 @@ export const remove = async (req, res) => {
     if (!kost) {
         return res.status(404).json({ message: 'Data tidak ditemukan' });
     }
+    
     try {
-        fs.unlinkSync(`./public/images/${kost.image}`);
-        await kost.destroy({
-            where: {
-                id: req.params.id,
-            },
-        });
+        const imagePath = `./public/images/${kost.image}`;
+        
+        if (!kost.image.startsWith('http')) {
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            } else {
+                console.warn(`File not found: ${imagePath}`);
+            }
+        }
+        
+        await kost.destroy();
         res.json({ message: "Kost deleted successfully" });
     } catch (err) {
+        console.error("Error during kost deletion:", err);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
