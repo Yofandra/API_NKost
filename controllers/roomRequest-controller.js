@@ -1,6 +1,7 @@
 import RoomRequest from "../models/RoomRequest.js";
 import Room from "../models/Room.js";
 import User from "../models/User.js";
+import Kost from "../models/Kost.js";
 import { sendEmail } from "../middlewares/emailService.js";
 
 export const createRoomRequest = async (req, res) => {
@@ -132,6 +133,59 @@ export const getRoomRequest = async (req, res) => {
         const roomRequests = await RoomRequest.findAll();
         res.json(roomRequests);
     } catch (err) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+export const getRoomRequestByKostId = async (req, res) => {
+    const id_user = res.locals.userId;
+    try {
+        const kosts = await Kost.findAll({
+            where: {
+                id_user: id_user,
+            },
+        });
+
+        const kostIds = kosts.map(kost => kost.id);
+
+        const rooms = await Room.findAll({
+            where: {
+                id_kost: kostIds,
+            },
+        });
+
+        const roomIds = rooms.map(room => room.id);
+
+        const roomRequests = await RoomRequest.findAll({
+            where: {
+                id_room: roomIds,
+                status: "pending",
+            },
+        });
+
+        const userIds = roomRequests.map(roomRequest => roomRequest.id_user);
+        const penyewa = await User.findAll({
+            where: {
+                id: userIds,
+            },
+        });
+
+        const formattedResponses = roomRequests.map(roomRequest => {
+            const room = rooms.find(room => room.id === roomRequest.id_room);
+            const kost = kosts.find(kost => kost.id === room.id_kost);
+            const user = penyewa.find(user => user.id === roomRequest.id_user);
+
+            return {
+                id: roomRequest.id,
+                name_kost: kost.name_kost,
+                num_room: room.num_room,
+                penyewa: user.name,
+            };
+        });
+
+        res.json(formattedResponses);
+    } catch (err) {
+        console.error('Error fetching room requests:', err);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
