@@ -1,5 +1,6 @@
 import { where } from "sequelize";
 import Rating from "../models/Rating.js";
+import User from "../models/User.js";
 
 export const findAll = async (req, res) => {
     try {
@@ -29,16 +30,33 @@ export const findByIdUser = async (req, res) => {
 
 export const findByIdKost = async (req, res) => {
     try {
-        const rating = await Rating.findAll({where: {id_kost : req.params.id}})
-        if (rating.length === 0){
-            res.json({msg : 'Belum ada penilaian'})
-        }else{
-            res.json(rating)
+        const ratings = await Rating.findAll({ where: { id_kost: req.params.id } });
+
+        if (ratings.length === 0) {
+            return res.status(404).json({ msg: 'Data tidak ditemukan' });
         }
-    } catch (error) {
-        return res.status(500).json({msg: 'Internal Server Error'})
+
+        const userIds = ratings.map(rating => rating.id_user);
+        const users = await User.findAll({ where: { id: userIds } });
+
+        const formattedResponses = ratings.map(rating => {
+            const user = users.find(user => user.id === rating.id_user);
+
+            return {
+                id: rating.id,
+                penyewa: user,
+                ratings: rating.rating,
+                comment: rating.comment,
+                id_kost: rating.id_kost
+            };
+        });
+
+        res.json(formattedResponses);
+    } catch (err) {
+        return res.status(500).json({ message: 'Internal Server Error', err });
     }
-}
+};
+
 
 export const create = async (req, res) => {
     const id_user =  res.locals.userId
